@@ -1,11 +1,11 @@
 #include <Arduino.h>
 #include "led_utils.h"
 
-#define LED_PIN_R 5  // Red pin
-#define LED_PIN_G 14 // Green pin
-#define LED_PIN_B 4  // Blue pin
-#define LED_PIN_W 0  // White pin
-#define LED_PIN_WW 2 // Warm white pin
+#define LED_PIN_R 13  // Red pin
+#define LED_PIN_G 12 // Green pin
+#define LED_PIN_B 14  // Blue pin
+#define LED_PIN_W 4  // White pin
+#define LED_PIN_WW 5 // Warm white pin
 
 int startR = 0;
 int startG = 0;
