@@ -4,21 +4,25 @@
 #include <WiFiManager.h>
 #include <cstring>
 #include <PubSubClient.h>
-#include <ArduinoJson.h> 
+#include <ArduinoJson.h>
 #include <EEPROM.h>
 #include "eeprom_utils.h"
-#include "led_utils.h"
 #include "variables.h"
 #include "html.h"
+#include <Adafruit_NeoPixel.h>
+#include "config.h"
+#include "ledblink.h"
+#include "colour.h"
+#include "effects.h"
 
 const char* wifiname = "Bambulab Led controller";
 const char* setuppage = html_setuppage;
 const char* finishedpage = html_finishpage;
 
-char Printerip[Max_ipLength+1] = "";
-char Printercode[Max_accessCode+1] = ""; 
-char PrinterID[Max_DeviceId+1] = "";
-char EspPassword[Max_EspPassword+1] = "";
+char Printerip[Max_ipLength + 1] = "";
+char Printercode[Max_accessCode + 1] = "";
+char PrinterID[Max_DeviceId + 1] = "";
+char EspPassword[Max_EspPassword + 1] = "";
 char DeviceName[20];
 
 int CurrentStage = -1;
@@ -48,38 +52,43 @@ char* generateRandomString(int length) {
   return randomString;
 }
 
-void handleLed(){ //Function to handle ledstatus eg if the X1C has an error then make the ledstrip red, or when its scanning turn off the light until its starts printing
-  if (ledstate == 1){
-    if (CurrentStage == 6 || CurrentStage == 17 || CurrentStage == 20 || CurrentStage == 21 || hasHMSerror){
-      setLedColor(255,0,0,0,0);
+// Bambu MQTT LED Handler
+
+void handleLed() { //Function to handle ledstatus eg if the X1C has an error then make the ledstrip red, or when its scanning turn off the light until its starts printing
+  if (ledstate == 1) {
+    if (CurrentStage == 6 || CurrentStage == 17 || CurrentStage == 20 || CurrentStage == 21 || hasHMSerror) {
+      // Neopixel Led - see colour.h or ledblink.h
+      red(0);
       return;
     };
-    if (finishstartms > 0 && millis() - finishstartms <= 300000){
-      setLedColor(0,255,0,0,0);
+    if (finishstartms > 0 && millis() - finishstartms <= 300000) {
+      // Neopixel Led - see colour.h or ledblink.h
+      Blinkgreen(0, 1000);
       return;
-    }else if(millis() - finishstartms > 300000){
+    } else if (millis() - finishstartms > 300000) {
       finishstartms;
     }
-    if (CurrentStage == 0 || CurrentStage == -1 || CurrentStage == 2){
-      setLedColor(0,0,0,255,255);
+    if (CurrentStage == 0 || CurrentStage == -1 || CurrentStage == 2) {
+      // Neopixel Led - see colour.h or ledblink.h
+      yellow_effect(2000);
       return;
     };
-    if (CurrentStage == 14 || CurrentStage == 9){
-      setLedColor(0,0,0,0,0);
+    if (CurrentStage == 14 || CurrentStage == 9) {
+      Led_off();
       return;
     };
-  }else{
-    setLedColor(0,0,0,0,0);
+  } else {
+    Led_off();
   };
 }
 
 void replaceSubstring(char* string, const char* substring, const char* newSubstring) {
-    char* substringStart = strstr(string, substring);
-    if (substringStart) {
-        char* substringEnd = substringStart + strlen(substring);
-        memmove(substringStart + strlen(newSubstring), substringEnd, strlen(substringEnd) + 1);
-        memcpy(substringStart, newSubstring, strlen(newSubstring));
-    }
+  char* substringStart = strstr(string, substring);
+  if (substringStart) {
+    char* substringEnd = substringStart + strlen(substring);
+    memmove(substringStart + strlen(newSubstring), substringEnd, strlen(substringEnd) + 1);
+    memcpy(substringStart, newSubstring, strlen(newSubstring));
+  }
 }
 
 void handleSetTemperature() {
@@ -88,7 +97,7 @@ void handleSetTemperature() {
   };
   char shortened_key[7];
   strncpy(shortened_key, EspPassword, 7);
-  shortened_key[7] = '\0'; 
+  shortened_key[7] = '\0';
   char received_api_key[8];
 
   server.arg("api_key").toCharArray(received_api_key, 8);
@@ -122,11 +131,11 @@ void handleSetupRoot() { //Function to handle the setuppage
   server.send(200, "text/html", setuppage);
 }
 
-void SetupWebpage(){ //Function to start webpage system
+void SetupWebpage() { //Function to start webpage system
   Serial.println(F("Starting Web server"));
   server.on("/", handleSetupRoot);
   server.on("/setupmqtt", savemqttdata);
- // server.on("/settemp", handleSetTemperature);
+  // server.on("/settemp", handleSetTemperature);
   server.begin();
   Serial.println(F("Web server started"));
 }
@@ -160,7 +169,7 @@ void savemqttdata() {
 }
 
 
-void PrinterCallback(char* topic, byte* payload, unsigned int length){ //Function to handle the MQTT Data from the mqtt broker
+void PrinterCallback(char* topic, byte* payload, unsigned int length) { //Function to handle the MQTT Data from the mqtt broker
   if (length < 500) { //Ignore the MC_Print message
     return;
   }
@@ -180,7 +189,7 @@ void PrinterCallback(char* topic, byte* payload, unsigned int length){ //Functio
     return;
   }
 
-   if (!doc.containsKey("print")) {
+  if (!doc.containsKey("print")) {
     return;
   }
 
@@ -190,18 +199,18 @@ void PrinterCallback(char* topic, byte* payload, unsigned int length){ //Functio
   Serial.print(F("stg_cur: "));
   Serial.println(CurrentStage);
 
-  if (doc["print"]["gcode_state"] == "FINISH" && finishstartms <= 0){
+  if (doc["print"]["gcode_state"] == "FINISH" && finishstartms <= 0) {
     finishstartms = millis();
-  }else if (doc["print"]["gcode_state"] != "FINISH" && finishstartms > 0){
+  } else if (doc["print"]["gcode_state"] != "FINISH" && finishstartms > 0) {
     finishstartms = 0;
   }
-  
+
   hasHMSerror = false;
 
   for (const auto& hms : doc["print"]["hms"].as<JsonArray>()) {
-      if (hms["code"] == 131073) {
-        hasHMSerror = true;
-      };
+    if (hms["code"] == 131073) {
+      hasHMSerror = true;
+    };
   }
 
   Serial.print(F("HMS error: "));
@@ -228,7 +237,11 @@ void setup() { // Setup function
 
   //clearEEPROM();
 
-  setPins(0,0,0,0,0);
+  //  Neopixel initialize
+  strip.begin();
+  strip.clear();
+  strip.setBrightness(LED_Brightness);
+  strip.show();
 
   WiFiClient.setInsecure();
   mqttClient.setBufferSize(10000);
@@ -240,7 +253,7 @@ void setup() { // Setup function
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("Failed to connect to WiFi, creating access point..."));
-    wifiManager.setAPCallback([](WiFiManager* mgr) {
+    wifiManager.setAPCallback([](WiFiManager * mgr) {
       Serial.println(F("Access point created, connect to:"));
       Serial.print(mgr->getConfigPortalSSID());
     });
@@ -253,7 +266,7 @@ void setup() { // Setup function
     Serial.println(F("Connecting to Wi-Fi..."));
   }
 
-  readFromEEPROM(Printerip,Printercode,PrinterID,EspPassword);
+  readFromEEPROM(Printerip, Printercode, PrinterID, EspPassword);
 
   if (strchr(EspPassword, '#') == NULL) { //Isue with eeprom giving �, so adding a # to check if the eeprom is empty or not
     Serial.println(F("No Password has been set, Resetting"));
@@ -261,11 +274,11 @@ void setup() { // Setup function
     memset(Printercode, '_', Max_accessCode);
     memset(PrinterID, '_', Max_DeviceId);
     memset(Printerip, '_', Max_ipLength);
-    char* newEspPassword = generateRandomString(Max_EspPassword-1);
+    char* newEspPassword = generateRandomString(Max_EspPassword - 1);
     strcat(newEspPassword, "#");
     strcat(EspPassword, newEspPassword);
     writeToEEPROM(Printerip, Printercode, PrinterID, EspPassword);
-    readFromEEPROM(Printerip,Printercode,PrinterID,EspPassword); //This will auto clear the eeprom
+    readFromEEPROM(Printerip, Printercode, PrinterID, EspPassword); //This will auto clear the eeprom
   };
 
   Serial.print(F("Connected to WiFi, IP address: "));
@@ -290,22 +303,23 @@ void setup() { // Setup function
 
 void loop() { //Loop function
   server.handleClient();
-if (WiFi.status() != WL_CONNECTED){
+  if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("Connection lost! Reconnecting..."));
     //wifiManager.autoConnect(wifiname);
     //Serial.println(F("Connected to WiFi!"));
     ESP.restart();
-}
-  if (WiFi.status() == WL_CONNECTED && strlen(Printerip) > 0 && (lastmqttconnectionattempt <= 0 || millis() - lastmqttconnectionattempt >= 10000)){
+  }
+  if (WiFi.status() == WL_CONNECTED && strlen(Printerip) > 0 && (lastmqttconnectionattempt <= 0 || millis() - lastmqttconnectionattempt >= 10000)) {
     if (!mqttClient.connected()) {
 
       Serial.print(F("Connecting with device name:"));
       Serial.println(DeviceName);
       Serial.println(F("Connecting to mqtt"));
-      
-      if (mqttClient.connect(DeviceName, "bblp", Printercode)){
+
+      if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
-        setLedColor(0,0,0,0,0); //Turn off led printer might be offline
+        // Neopixel Led - see colour.h or ledblink.h
+        Blinkyellow(0, 1000);
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);
@@ -315,7 +329,8 @@ if (WiFi.status() != WL_CONNECTED){
         mqttClient.subscribe(mqttTopic);
         lastmqttconnectionattempt;
       } else {
-        setPins(0,0,0,0,0); //Turn off led printer is offline and or the given information is wrong
+        // Neopixel Led - see colour.h or ledblink.h
+        Led_off();
         Serial.print("failed, rc=");
         Serial.print(mqttClient.state());
         Serial.println(" try again in 10 seconds");
