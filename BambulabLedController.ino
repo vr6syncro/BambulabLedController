@@ -14,6 +14,7 @@
 #include "ledblink.h"
 #include "colour.h"
 #include "effects.h"
+#include "handle.h"
 
 const char* wifiname = "Bambulab Led controller";
 const char* setuppage = html_setuppage;
@@ -24,12 +25,6 @@ char Printercode[Max_accessCode + 1] = "";
 char PrinterID[Max_DeviceId + 1] = "";
 char EspPassword[Max_EspPassword + 1] = "";
 char DeviceName[20];
-
-int CurrentStage = -1;
-bool hasHMSerror = false;
-bool ledstate = false;
-unsigned long finishstartms;
-unsigned long lastmqttconnectionattempt;
 
 ESP8266WebServer server(80);
 IPAddress apIP(192, 168, 1, 1);
@@ -50,36 +45,6 @@ char* generateRandomString(int length) {
   randomString[length] = '\0';
 
   return randomString;
-}
-
-// Bambu MQTT LED Handler
-
-void handleLed() { //Function to handle ledstatus eg if the X1C has an error then make the ledstrip red, or when its scanning turn off the light until its starts printing
-  if (ledstate == 1) {
-    if (CurrentStage == 6 || CurrentStage == 17 || CurrentStage == 20 || CurrentStage == 21 || hasHMSerror) {
-      // Neopixel Led - see colour.h or ledblink.h
-      red(0);
-      return;
-    };
-    if (finishstartms > 0 && millis() - finishstartms <= 300000) {
-      // Neopixel Led - see colour.h or ledblink.h
-      Blinkgreen(0, 1000);
-      return;
-    } else if (millis() - finishstartms > 300000) {
-      finishstartms;
-    }
-    if (CurrentStage == 0 || CurrentStage == -1 || CurrentStage == 2) {
-      // Neopixel Led - see colour.h or ledblink.h
-      yellow_effect(2000);
-      return;
-    };
-    if (CurrentStage == 14 || CurrentStage == 9) {
-      Led_off();
-      return;
-    };
-  } else {
-    Led_off();
-  };
 }
 
 void replaceSubstring(char* string, const char* substring, const char* newSubstring) {
@@ -319,7 +284,8 @@ void loop() { //Loop function
       if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
         // Neopixel Led - see colour.h or ledblink.h
-        Blinkyellow(0, 1000);
+        yellow(0);
+        strip.show();
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);

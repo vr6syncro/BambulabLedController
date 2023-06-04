@@ -6,7 +6,7 @@
 #define Debug_LED_Console true
 
 // LED overall Brightness (0-255)
-#define LED_Brightness 5
+#define LED_Brightness 48
 
 // Which pin on the Arduino is connected to the NeoPixels?
 // On a Trinket or Gemma we suggest changing this to 1:
