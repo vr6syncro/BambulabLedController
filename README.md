@@ -1,4 +1,13 @@
-## BL Led Controller
+## Wemos D1 Bambulab Neopixel Controller
+
+Fork was modified to work with Neopixel LED. At the moment 3 Led's are supportet.
+
+For more infos and help see my discord at: [http://discord.vr6syncro.de](http://discord.vr6syncro.de)
+
+
+
+
+BL Led Controller
 
 The BL Led Controller is an ESP8266-based device that connects to your Bambulab X1 or X1C and controls the LED strip based on the state of the printer.
 
