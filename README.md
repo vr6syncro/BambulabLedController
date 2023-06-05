@@ -4,6 +4,10 @@ Fork was modified to work with Neopixel LED. At the moment 3 Led's are supportet
 
 For more infos and help see my discord at: [http://discord.vr6syncro.de](http://discord.vr6syncro.de)
 
+3D Print related files are uploaded to: [https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator](https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator)
+
+More is planned but not yet ready.
+
 
 
 
