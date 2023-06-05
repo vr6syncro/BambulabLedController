@@ -27,7 +27,7 @@ void Blinkred(int wich_led, int blink_delay)
   delay(blink_delay);
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Blink -> Red On");
+    Serial.println(F("Neopixel -> Blink -> Red On"));
   }
   else
   {
@@ -37,7 +37,30 @@ void Blinkred(int wich_led, int blink_delay)
   delay(blink_delay);
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Blink -> Red Off");
+    Serial.println(F("Neopixel -> Blink -> Red Off"));
+  }
+  else
+  {
+  }
+}
+void Blinkyellow(int wich_led, int blink_delay)
+{
+  strip.setPixelColor(wich_led, 255, 234, 0);
+  strip.show();
+  delay(blink_delay);
+  if (Debug_LED_Console == true)
+  {
+    Serial.println(F("Neopixel -> Blink -> Yellow On"));
+  }
+  else
+  {
+  }
+  strip.setPixelColor(wich_led, 0, 0, 0);
+  strip.show();
+  delay(blink_delay);
+  if (Debug_LED_Console == true)
+  {
+    Serial.println(F("Neopixel -> Blink -> Yellow Off"));
   }
   else
   {

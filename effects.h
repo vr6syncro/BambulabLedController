@@ -11,7 +11,7 @@ void ampel_effect()
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Effect -> Ampel");
+    Serial.println(F("Neopixel -> Effect -> Ampel"));
   }
   else
   {

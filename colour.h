@@ -11,7 +11,7 @@ void red(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Red");
+    Serial.println(F("Neopixel -> Red"));
   }
   else
   {
@@ -24,7 +24,7 @@ void green(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Green");
+    Serial.println(F("Neopixel -> Green"));
   }
   else
   {
@@ -37,7 +37,7 @@ void blue(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Blue");
+    Serial.println(F("Neopixel -> Blue"));
   }
   else
   {
@@ -50,7 +50,7 @@ void white(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> White");
+    Serial.println(F("Neopixel -> White"));
   }
   else
   {
@@ -63,7 +63,7 @@ void yellow(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Yellow");
+    Serial.println(F("Neopixel -> Yellow"));
   }
   else
   {
@@ -76,7 +76,7 @@ void orange(int wich_led)
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> Orange");
+    Serial.println(F("Neopixel -> Orange"));
   }
   else
   {
@@ -89,7 +89,7 @@ void Led_off()
   strip.show();
   if (Debug_LED_Console == true)
   {
-    Serial.println("Neopixel -> OFF");
+    Serial.println(F("Neopixel -> OFF"));
   }
   else
   {

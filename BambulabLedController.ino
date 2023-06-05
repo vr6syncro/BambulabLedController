@@ -284,8 +284,7 @@ void loop() { //Loop function
       if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
         // Neopixel Led - see colour.h or ledblink.h
-        yellow(0);
-        strip.show();
+        Blinkyellow(1, 500);
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);
