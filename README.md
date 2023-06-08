@@ -1,5 +1,9 @@
 ## Wemos D1 Bambulab Neopixel Controller
 
+<p align="center">
+  <img src="[your_relative_path_here](https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true)" width="350" title="Display Stand V1">
+</p>
+
 Fork was modified to work with Neopixel LED. At the moment 3 Led's are supportet.
 
 For more infos and help see my discord at: [http://discord.vr6syncro.de](http://discord.vr6syncro.de)
