@@ -1,6 +1,6 @@
 ## Wemos D1 Bambulab Neopixel Controller
 
-<p align="center">
+<p align="left">
   <img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="350" title="Display Stand V1">
 </p>
 
