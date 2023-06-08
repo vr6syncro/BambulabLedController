@@ -20,6 +20,7 @@ G / Ground pin to G / Ground Pin
 <br>
 D2 pin to DIN on the first LED
 <br>
+There is maybe also a arrow on the led. This must face away from the wemos side. like: wemos d2 -> din -> dout -> din .....
 
 If you use a Led Strip thats it otherwise you continue soldering from the dout side of the led to the next led din side.
 
