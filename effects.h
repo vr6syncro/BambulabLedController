@@ -4,6 +4,12 @@
 #include <Adafruit_NeoPixel.h>
 #include "config.h"
 
+/* Traffic Light Effect (first led green, secon yellow, thrid red)
+
+  ampel_effect();
+
+*/
+
 void ampel_effect()
 {
   strip.setPixelColor(0, 0, 255, 0);
@@ -123,6 +129,14 @@ void FadeInOut(byte red, byte green, byte blue) {
   }
 }
 
+/* Single LED Blink. Change the 0 to the LED that you want to activate. ! 0=LED1, 1=LED2... also you can change the time 1000.
+
+  Blinkred(0, 1000);
+  Blinkblue(0, 1000);
+  Blinkyellow(0, 1000);
+
+*/
+
 // use: Blinkred(0, 1000);
 // change 0 to Led number that should be used in the stripe
 // change 1000 to the delay Time the Blink should have
@@ -199,8 +213,16 @@ void Blinkblue(int wich_led, int blink_delay)
   }
 }
 
-// use: red(0);
-// change 0 to Led number that should be used in the stripe
+/* single color, change the 0 to the led you want to activate. ! 0=LED1, 1=LED2 ....
+
+  red(0);
+  green(0);
+  blue(0);
+  white(0);
+  yellow(0);
+  orange(0);
+
+*/
 
 void red(int wich_led)
 {
@@ -279,6 +301,12 @@ void orange(int wich_led)
   {
   }
 }
+
+/* Turn off all LEDS
+
+  void Led_off();
+
+*/
 
 void Led_off()
 {
