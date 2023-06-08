@@ -15,8 +15,11 @@ For easy setup use my Flash Homepage: [https://vr6syncro.de/programmer/flash.htm
 Up to 6 Led is supported with internal USB Power on the Wemos D1 mini if u are not modify the brightness in the firmware otherwise there ther might be some issues.
 
 5V Power pin to LED + / 5V Pin
+<br>
 G / Ground pin to G / Ground Pin
+<br>
 D2 pin to DIN on the first LED
+<br>
 
 If you use a Led Strip thats it otherwise you continue soldering from the dout side of the led to the next led din side.
 
