@@ -10,11 +10,9 @@
 #include "variables.h"
 #include "html.h"
 #include <Adafruit_NeoPixel.h>
-#include "config.h"
-#include "ledblink.h"
-#include "colour.h"
-#include "effects.h"
 #include "handle.h"
+#include "effects.h"
+
 
 const char* wifiname = "Bambulab Led controller";
 const char* setuppage = html_setuppage;
@@ -284,7 +282,7 @@ void loop() { //Loop function
       if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
         // Neopixel Led - see colour.h or ledblink.h
-        Blinkyellow(1, 500);
+        FadeInOut(0xEE, 0xFF, 0x00);
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);
@@ -292,7 +290,6 @@ void loop() { //Loop function
         Serial.println("Topic: ");
         Serial.println(mqttTopic);
         mqttClient.subscribe(mqttTopic);
-        lastmqttconnectionattempt;
       } else {
         // Neopixel Led - see colour.h or ledblink.h
         Led_off();
