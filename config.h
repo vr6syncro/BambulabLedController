@@ -3,7 +3,7 @@
 #include <Arduino.h>
 
 // Extra LED Debug Output to Console
-#define Debug_LED_Console true
+#define Debug_LED_Console false
 
 // LED overall Brightness (0-255)
 #define LED_Brightness 48
