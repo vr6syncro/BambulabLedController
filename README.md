@@ -4,14 +4,14 @@
   <img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="350" title="Display Stand V1">
 </p>
 
-Fork was modified to work with Neopixel LED. At the moment 3 Led's are supportet.
+Fork was modified to work with Neopixel LED. At the moment 6 Led's are supported.
 
 For more infos and help see my discord at: [http://discord.vr6syncro.de](http://discord.vr6syncro.de)
 
 3D Print related files are uploaded to: [https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator](https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator)
 
-More is planned but not yet ready.
 
+There are a few things that must be solved to get it stable but is is already working.
 
 
 
