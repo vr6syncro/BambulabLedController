@@ -13,6 +13,7 @@
 #include "handle.h"
 #include "effects.h"
 
+#define MQTT_MAX_PACKET_SIZE 4096
 
 const char* wifiname = "Bambulab Led controller";
 const char* setuppage = html_setuppage;
@@ -300,6 +301,7 @@ void loop() { //Loop function
       }
     }
   }
-  //Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
+  // Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
+  delay(10);
   mqttClient.loop();
 }
