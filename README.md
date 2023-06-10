@@ -6,12 +6,35 @@ Click for Youtube Video<br>
 </p>
 
 
-## Setup - Flashing
+## Setup - Flashing and Configure Controller
 
 For easy setup use my Flash Homepage: [https://vr6syncro.de/programmer/flash.html](https://vr6syncro.de/programmer/flash.html)
 There are compiled Version for installation.
 
 Otherwise clone repository and flash with Arduino IDE.
+
+After you have flashed the firmware look for the access point that the controller should now open.
+
+Connect to the access point. It can happen that an error is displayed because there is no internet connection, just ignore it.
+
+Now switch to the browser and enter the IP 192.168.4.1.
+
+Here you connect the controller to your WiFi.
+
+After you have saved you have to switch to the console of the controller.
+This can be done via the IDE or via the website programmer under the Logs and Console menu.
+
+The IP, the username and the password for the controller are now displayed here.
+(Please make a note, will not be displayed later)
+
+Now connect by entering the displayed IP and log in.
+
+Configure your printer by entering and saving the IP of the printer, the secret and the serial number.
+
+In the console where we previously received the user data, messages like: Message arrived in topic: ...
+turn up.
+
+Now the controller is set up.
 
 ## Wiring
 
