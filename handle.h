@@ -43,8 +43,7 @@ void handleLed() {
   if (ledstate == 1) {
     if (CurrentStage == -1) {
       // ↓ Printer Idle
-      colorWipe(0x00, 0xff, 0x00, 50);
-      colorWipe(0x00, 0x00, 0x00, 50);
+      FadeInOut(0x09, 0xFF, 0x00);
       return;
     };
     if (CurrentStage == 0) {
