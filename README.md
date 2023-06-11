@@ -58,7 +58,9 @@ The effects are stored in effects.h, i would advise against changing anything th
 
 For more infos and help see my discord at: [http://discord.vr6syncro.de](http://discord.vr6syncro.de)
 
-3D Print related files are uploaded to: [https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator](https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator)
+3D Print related files are uploaded to Printables: 
+<br><a href="https://www.printables.com/de/model/501355-bambulab-status-indicator-table-stand">Table Stand</a> 
+<br><a href="https://www.printables.com/de/model/499286-bambulab-neopixel-status-indicator">Traffic Light</a> <br>
 
 
 There are a few things that must be solved to get it stable but is is already working.
