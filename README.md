@@ -1,5 +1,7 @@
 ## Wemos D1 Bambulab Neopixel Controller
 
+Important information: Please only use with one connected AMS, otherwise there will be problems with the large MQTT packages.
+
 <p align="left">
 Click for Youtube Video<br>
 	<a href="https://youtu.be/bh6ZwIvbDFg"><img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="150"></a>
