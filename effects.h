@@ -1,325 +1,112 @@
 #ifndef effects_h
 #define effects_h
+
 #include <Arduino.h>
 #include <Adafruit_NeoPixel.h>
 #include "config.h"
 
-/* Traffic Light Effect (first led green, secon yellow, thrid red)
-
-  ampel_effect();
-
+/* Assuming you have initialized the NeoPixel strip before calling this
+  setAllColor("RED"); // Sets all LEDs to red color
+  setAllColor("BLUE"); // Sets all LEDs to blue color
+  setAllColor("GREEN"); // Sets all LEDs to green color
+  setAllColor("DARK_GREEN"); // Sets all LEDs to green color
+  setAllColor("WHITE"); // Sets all LEDs to white color
+  setAllColor("YELLOW"); // Sets all LEDs to yellow color
+  setAllColor("ORANGE"); // Sets all LEDs to orange color
+  setAll(0x00, 0x00, 0x00); // Individual color
+  blinkAllWithColor("GREEN", 100); // color (see above) and interval
+  setIndividualLED(0, RED);    // LED 0-5 (for 6 Leds) to red (or see above) color
 */
 
-void ampel_effect()
+// Define LED color constants
+const uint32_t COLOR_RED = strip.Color(255, 0, 0);
+const uint32_t COLOR_GREEN = strip.Color(0, 255, 0);
+const uint32_t COLOR_BLUE = strip.Color(0, 0, 255);
+const uint32_t COLOR_WHITE = strip.Color(255, 255, 255);
+const uint32_t COLOR_YELLOW = strip.Color(255, 234, 0);
+const uint32_t COLOR_ORANGE = strip.Color(251, 129, 0);
+const uint32_t COLOR_DARK_GREEN = strip.Color(0, 28, 0);
+
+uint32_t getColorFromName(const String& colorName)
 {
-  strip.setPixelColor(0, 0, 255, 0);
-  strip.setPixelColor(1, 255, 234, 0);
-  strip.setPixelColor(2, 255, 0, 0);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Effect -> Ampel"));
-  }
+  if (colorName.equalsIgnoreCase("RED"))
+    return COLOR_RED;
+  else if (colorName.equalsIgnoreCase("GREEN"))
+    return COLOR_GREEN;
+  else if (colorName.equalsIgnoreCase("BLUE"))
+    return COLOR_BLUE;
+  else if (colorName.equalsIgnoreCase("WHITE"))
+    return COLOR_WHITE;
+  else if (colorName.equalsIgnoreCase("YELLOW"))
+    return COLOR_YELLOW;
+  else if (colorName.equalsIgnoreCase("ORANGE"))
+    return COLOR_ORANGE;
+  else if (colorName.equalsIgnoreCase("DARK_GREEN"))
+    return COLOR_DARK_GREEN;
   else
-  {
-  }
+    return 0;
 }
 
-/* color wipe
+void setAllColor(const String& colorName)
+{
+  uint32_t colorValue = getColorFromName(colorName);
 
-  colorWipe(0x00, 0xff, 0x00, 50);
-  colorWipe(0x00, 0x00, 0x00, 50);
+  for (int i = 0; i < LED_COUNT; i++)
+  {
+    strip.setPixelColor(i, colorValue);
+  }
+  strip.show();
+}
 
-*/
-
-void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
-  for (uint16_t i = 0; i < LED_COUNT; i++) {
-    strip.setPixelColor(i, red, green, blue);
+void setIndividualLED(int ledIndex, uint32_t colorValue)
+{
+  if (ledIndex >= 0 && ledIndex < LED_COUNT)
+  {
+    strip.setPixelColor(ledIndex, colorValue);
     strip.show();
-    delay(SpeedDelay);
   }
 }
-
-/*
-
-
-  Set all LED to color
-
-  setAll(0xff, 0x00, 0x00); // red
-  setAll(0xff, 0xff, 0xff); // white
-  setAll(0x00, 0x00, 0xff); // blue
-  setAll(0xEE, 0xFF, 0x00); // yellow
-  setAll(0xFF, 0xAA, 0x00); // orange
-  setAll(0x09, 0xFF, 0x00); // green
-
-
-*/
-
-void setAll(byte red, byte green, byte blue) {
-  for (int i = 0; i < LED_COUNT; i++ ) {
-    strip.setPixelColor(i, red, green, blue);
-  }
-  strip.show();
-}
-
-
-/* color loop
-
-  RGBLoop();
-
-*/
-
-void RGBLoop() {
-  for (int j = 0; j < 3; j++ ) {
-    // Fade IN
-    for (int k = 0; k < LED_Brightness; k++) {
-      switch (j) {
-        case 0: setAll(k, 0, 0); break;
-        case 1: setAll(0, k, 0); break;
-        case 2: setAll(0, 0, k); break;
-      }
-      strip.show();
-      delay(15);
-    }
-    // Fade OUT
-    for (int k = LED_Brightness; k >= 0; k--) {
-      switch (j) {
-        case 0: setAll(k, 0, 0); break;
-        case 1: setAll(0, k, 0); break;
-        case 2: setAll(0, 0, k); break;
-      }
-      strip.show();
-      delay(15);
-    }
-  }
-}
-
-/*
-
-   Fade IN/Out
-
-  FadeInOut(0xff, 0x00, 0x00); // red
-  FadeInOut(0xff, 0xff, 0xff); // white
-  FadeInOut(0x00, 0x00, 0xff); // blue
-  FadeInOut(0xEE, 0xFF, 0x00); // yellow
-  FadeInOut(0xFF, 0xAA, 0x00); // orange
-  FadeInOut(0x09, 0xFF, 0x00); // green
-
-*/
-
-void FadeInOut(byte red, byte green, byte blue) {
-  float r, g, b;
-
-  for (int k = 0; k < LED_Brightness; k = k + 1) {
-    r = (k / 256.0) * red;
-    g = (k / 256.0) * green;
-    b = (k / 256.0) * blue;
-    setAll(r, g, b);
-    strip.show();
-    delay(15);
-  }
-
-  for (int k = LED_Brightness; k >= 0; k = k - 2) {
-    r = (k / 256.0) * red;
-    g = (k / 256.0) * green;
-    b = (k / 256.0) * blue;
-    setAll(r, g, b);
-    strip.show();
-    delay(15);
-  }
-}
-
-/* Single LED Blink. Change the 0 to the LED that you want to activate. ! 0=LED1, 1=LED2... also you can change the time 1000.
-
-  Blinkred(0, 1000);
-  Blinkblue(0, 1000);
-  Blinkyellow(0, 1000);
-
-*/
-
-// use: Blinkred(0, 1000);
-// change 0 to Led number that should be used in the stripe
-// change 1000 to the delay Time the Blink should have
-
-//Blinkred
-void Blinkred(int wich_led, int blink_delay)
-{
-  strip.setPixelColor(wich_led, 255, 0, 0);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Red On"));
-  }
-  else
-  {
-  }
-  strip.setPixelColor(wich_led, 0, 0, 0);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Red Off"));
-  }
-  else
-  {
-  }
-}
-void Blinkyellow(int wich_led, int blink_delay)
-{
-  strip.setPixelColor(wich_led, 255, 234, 0);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Yellow On"));
-  }
-  else
-  {
-  }
-  strip.setPixelColor(wich_led, 0, 0, 0);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Yellow Off"));
-  }
-  else
-  {
-  }
-}
-
-void Blinkblue(int wich_led, int blink_delay)
-{
-  strip.setPixelColor(wich_led, 0, 0, 255);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Blue On"));
-  }
-  else
-  {
-  }
-  strip.setPixelColor(wich_led, 0, 0, 0);
-  strip.show();
-  delay(blink_delay);
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blink -> Blue Off"));
-  }
-  else
-  {
-  }
-}
-
-/* single color, change the 0 to the led you want to activate. ! 0=LED1, 1=LED2 ....
-
-  red(0);
-  green(0);
-  blue(0);
-  white(0);
-  yellow(0);
-  orange(0);
-
-*/
-
-void red(int wich_led)
-{
-  strip.setPixelColor(wich_led, 255, 0, 0);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Red"));
-  }
-  else
-  {
-  }
-}
-
-void green(int wich_led)
-{
-  strip.setPixelColor(wich_led, 0, 255, 0);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Green"));
-  }
-  else
-  {
-  }
-}
-
-void blue(int wich_led)
-{
-  strip.setPixelColor(wich_led, 0, 0, 255);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Blue"));
-  }
-  else
-  {
-  }
-}
-
-void white(int wich_led)
-{
-  strip.setPixelColor(wich_led, 255, 255, 255);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> White"));
-  }
-  else
-  {
-  }
-}
-
-void yellow(int wich_led)
-{
-  strip.setPixelColor(wich_led, 255, 234, 0);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Yellow"));
-  }
-  else
-  {
-  }
-}
-
-void orange(int wich_led)
-{
-  strip.setPixelColor(wich_led, 251, 129, 0);
-  strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> Orange"));
-  }
-  else
-  {
-  }
-}
-
-/* Turn off all LEDS
-
-  void Led_off();
-
-*/
 
 void Led_off()
 {
   strip.clear();
   strip.show();
-  if (Debug_LED_Console == true)
-  {
-    Serial.println(F("Neopixel -> OFF"));
-  }
-  else
-  {
-  }
 }
 
+void blinkAllWithColor(const String& colorName, uint32_t interval)
+{
+  uint32_t colorValue = getColorFromName(colorName);
+
+  // Get the current time
+  static uint32_t previousMillis = 0;
+  uint32_t currentMillis = millis();
+
+  // Calculate the time elapsed since the last update
+  uint32_t elapsedTime = currentMillis - previousMillis;
+
+  // Check if it's time to update the LEDs
+  if (elapsedTime >= interval)
+  {
+    // Save the current time for the next update
+    previousMillis = currentMillis;
+
+    // Check if the LEDs are currently off
+    if (strip.getPixelColor(0) == 0)
+    {
+      // Turn on all LEDs with the specified color
+      for (int i = 0; i < LED_COUNT; i++)
+      {
+        strip.setPixelColor(i, colorValue);
+      }
+      strip.show();
+    }
+    else
+    {
+      // Turn off all LEDs
+      strip.clear();
+      strip.show();
+    }
+  }
+}
 
 #endif

@@ -13,9 +13,9 @@
 #include "handle.h"
 #include "effects.h"
 
-#define MQTT_MAX_PACKET_SIZE 4096
+bool rawdata = false;
 
-const char* wifiname = "Bambulab Led controller";
+const char* wifiname = "Bambulab Led Controller Neopixel";
 const char* setuppage = html_setuppage;
 const char* finishedpage = html_finishpage;
 
@@ -44,6 +44,52 @@ char* generateRandomString(int length) {
   randomString[length] = '\0';
 
   return randomString;
+}
+
+/* Some Debugging Stuff
+change Neopixel Brightness with brightness=xxx (0 - 255)
+change currentstage with currentstage=x (-1 - 21), will be overwritten on next mqtt loop!
+turn on off the rawdata with rawdata=true/false
+*/
+
+void handleSerialInput() {
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    // Check if the input matches the brightness command
+    if (input.startsWith("brightness=")) {
+      String brightnessStr = input.substring(11);
+      int brightness = brightnessStr.toInt();
+
+      // Adjust brightness value if needed
+      if (brightness < 0) brightness = 0;
+      if (brightness > 255) brightness = 255;
+
+      strip.setBrightness(brightness);
+      strip.show();
+
+      Serial.print("LED brightness set to ");
+      Serial.println(brightness);
+    }
+    else if (input.startsWith("currentstage=")) {
+      String stageStr = input.substring(13);
+      int stage = stageStr.toInt();
+
+      CurrentStage = stage;
+
+      Serial.print("Current stage set to ");
+      Serial.println(CurrentStage);
+    }
+    else if (input == "rawdata=true") {
+      rawdata = true;
+      Serial.println("JSON data output is enabled.");
+    }
+    else if (input == "rawdata=false") {
+      rawdata = false;
+      Serial.println("JSON data output is disabled.");
+    }
+  }
 }
 
 void replaceSubstring(char* string, const char* substring, const char* newSubstring) {
@@ -134,10 +180,6 @@ void savemqttdata() {
 
 
 void PrinterCallback(char* topic, byte* payload, unsigned int length) { //Function to handle the MQTT Data from the mqtt broker
-  if (length < 500) { //Ignore the MC_Print message
-    return;
-  }
-
   Serial.print(F("Message arrived in topic: "));
   Serial.println(topic);
   Serial.print(F("Message Length: "));
@@ -157,34 +199,46 @@ void PrinterCallback(char* topic, byte* payload, unsigned int length) { //Functi
     return;
   }
 
-  CurrentStage = doc["print"]["stg_cur"];
+  if (rawdata) {
+    Serial.println(F("===== JSON Data ====="));
+    serializeJsonPretty(doc, Serial);
+    Serial.println(F("======================"));
+  }
 
+  if (doc["print"].containsKey("stg_cur")) {
+    CurrentStage = doc["print"]["stg_cur"];
+  }
 
   Serial.print(F("stg_cur: "));
   Serial.println(CurrentStage);
 
-  if (doc["print"]["gcode_state"] == "FINISH" && finishstartms <= 0) {
-    finishstartms = millis();
-  } else if (doc["print"]["gcode_state"] != "FINISH" && finishstartms > 0) {
-    finishstartms = 0;
+  if (doc["print"].containsKey("gcode_state")) {
+    if (doc["print"]["gcode_state"] == "FINISH" && finishstartms <= 0) {
+      finishstartms = millis();
+    } else if (doc["print"]["gcode_state"] != "FINISH" && finishstartms > 0) {
+      finishstartms = 0;
+    }
   }
 
-  hasHMSerror = false;
-
-  for (const auto& hms : doc["print"]["hms"].as<JsonArray>()) {
-    if (hms["code"] == 131073) {
-      hasHMSerror = true;
-    };
+  if (doc["print"].containsKey("hms")) {
+    hasHMSerror = false;
+    for (const auto& hms : doc["print"]["hms"].as<JsonArray>()) {
+      if (hms["code"] == 131073) {
+        hasHMSerror = true;
+      };
+    }
   }
 
   Serial.print(F("HMS error: "));
   Serial.println(hasHMSerror);
 
-  if (!doc["print"].containsKey("lights_report")) {
-    return;
+  if (doc["print"].containsKey("lights_report")) {
+    if (doc["print"]["lights_report"][0]["node"] == "chamber_light") {
+      ledstate = doc["print"]["lights_report"][0]["mode"] == "on";
+      Serial.print("Ledchanged: ");
+      Serial.println(ledstate);
+    }
   }
-
-  ledstate = doc["print"]["lights_report"][0]["mode"] == "on";
 
   Serial.print(F("cur_led: "));
   Serial.println(ledstate);
@@ -282,8 +336,7 @@ void loop() { //Loop function
 
       if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
-        // Neopixel Led - see colour.h or ledblink.h
-        FadeInOut(0xEE, 0xFF, 0x00);
+        Led_off();
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);
@@ -291,8 +344,8 @@ void loop() { //Loop function
         Serial.println("Topic: ");
         Serial.println(mqttTopic);
         mqttClient.subscribe(mqttTopic);
+        lastmqttconnectionattempt;
       } else {
-        // Neopixel Led - see colour.h or ledblink.h
         Led_off();
         Serial.print("failed, rc=");
         Serial.print(mqttClient.state());
@@ -301,7 +354,7 @@ void loop() { //Loop function
       }
     }
   }
-  // Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
-  delay(10);
+  //Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
   mqttClient.loop();
+  handleSerialInput(); // debug
 }
