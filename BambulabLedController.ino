@@ -11,7 +11,14 @@
 #include "variables.h"
 #include "html.h"
 
+<<<<<<< Updated upstream:BambulabLedController.ino
 const char* wifiname = "Bambulab Led controller";
+=======
+bool rawdata = false;
+int sequenceId = 0;
+
+const char* wifiname = "Bambulab Led Controller Neopixel";
+>>>>>>> Stashed changes:BambulabLedController_NeoPixel.ino
 const char* setuppage = html_setuppage;
 const char* finishedpage = html_finishpage;
 
@@ -48,6 +55,7 @@ char* generateRandomString(int length) {
   return randomString;
 }
 
+<<<<<<< Updated upstream:BambulabLedController.ino
 void handleLed(){ //Function to handle ledstatus eg if the X1C has an error then make the ledstrip red, or when its scanning turn off the light until its starts printing
   if (ledstate == 1){
     if (CurrentStage == 6 || CurrentStage == 17 || CurrentStage == 20 || CurrentStage == 21 || hasHMSerror){
@@ -71,7 +79,100 @@ void handleLed(){ //Function to handle ledstatus eg if the X1C has an error then
   }else{
     setLedColor(0,0,0,0,0);
   };
+=======
+void publishMessage(const String& topic, const String& message) {
+  mqttClient.publish(topic.c_str(), message.c_str());
+  Serial.print("Publishing to topic: ");
+  Serial.println(topic);
+  Serial.print("JSON message: ");
+  Serial.println(message);
 }
+
+void handleCommand(const String& command) {
+  // Increment the sequence_id
+  sequenceId++;
+
+  // Construct the JSON message based on the command
+  String message;
+  if (command == "print=stop") {
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"stop\",\"param\":\"\"}}";
+  } else if (command == "print=pause") {
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"pause\",\"param\":\"\"}}";
+  } else if (command == "print=resume") {
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"resume\",\"param\":\"\"}}";
+  } else if (command == "chamber_light=on") {
+    message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
+  } else if (command == "chamber_light=off") {
+    message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"off\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
+  } else {
+    // Invalid command
+    Serial.println(F("Invalid command."));
+    return;
+  }
+
+  // Publish the message
+  publishMessage("device/" + String(PrinterID) + "/request", message);
+}
+
+
+
+/* Some Debugging Stuff
+  change Neopixel Brightness with brightness=xxx (0 - 255)
+  change currentstage with currentstage=x (-1 - 21), will be overwritten on next mqtt loop!
+  turn on off the rawdata with rawdata=true/false
+*/
+
+void handleSerialInput() {
+  if (Serial.available() > 0) {
+    String input = Serial.readStringUntil('\n');
+    input.trim();
+
+    // Check if the input matches the brightness command
+    if (input.startsWith("brightness=")) {
+      String brightnessStr = input.substring(11);
+      int brightness = brightnessStr.toInt();
+
+      // Adjust brightness value if needed
+      if (brightness < 0) brightness = 0;
+      if (brightness > 255) brightness = 255;
+
+      strip.setBrightness(brightness);
+      strip.show();
+
+      Serial.print("LED brightness set to ");
+      Serial.println(brightness);
+    }
+    else if (input.startsWith("currentstage=")) {
+      String stageStr = input.substring(13);
+      int stage = stageStr.toInt();
+
+      CurrentStage = stage;
+
+      Serial.print("Current stage set to ");
+      Serial.println(CurrentStage);
+    } else if (input == "rawdata=true") {
+      rawdata = true;
+      Serial.println("JSON data output is enabled.");
+    } else if (input == "rawdata=false") {
+      rawdata = false;
+      Serial.println("JSON data output is disabled.");
+    } else if (input.startsWith("chamber_light=")) {
+      String stateStr = input.substring(14);
+      if (stateStr == "on") {
+        publishMessage("device/" + String(PrinterID) + "/request", "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}");
+      } else if (stateStr == "off") {
+        publishMessage("device/" + String(PrinterID) + "/request", "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"off\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}");
+      }
+    } else if (input == "print=stop" || input == "print=pause" || input == "print=resume" || input == "chamber_light=on" || input == "chamber_light=off") {
+      // Handle the commands for print and chamber_light
+      handleCommand(input);
+    } else {
+      Serial.println(F("Invalid command."));
+    }
+  }
+>>>>>>> Stashed changes:BambulabLedController_NeoPixel.ino
+}
+
 
 void replaceSubstring(char* string, const char* substring, const char* newSubstring) {
     char* substringStart = strstr(string, substring);
@@ -82,6 +183,7 @@ void replaceSubstring(char* string, const char* substring, const char* newSubstr
     }
 }
 
+/*
 void handleSetTemperature() {
   if (!server.hasArg("api_key")) {
     return server.send(400, "text/plain", "Missing API key parameter.");
@@ -111,6 +213,7 @@ void handleSetTemperature() {
   }
   return server.send(200, "text/plain", "Ok");
 }
+*/
 
 void handleSetupRoot() { //Function to handle the setuppage
   if (!server.authenticate("BLLC", EspPassword)) {
@@ -165,7 +268,6 @@ void PrinterCallback(char* topic, byte* payload, unsigned int length){ //Functio
   Serial.println(topic);
   Serial.print(F("Message Length: "));
   Serial.println(length);
-  Serial.print(F("Message:"));
 
   StaticJsonDocument<10000> doc;
   DeserializationError error = deserializeJson(doc, payload, length);
@@ -180,9 +282,17 @@ void PrinterCallback(char* topic, byte* payload, unsigned int length){ //Functio
     return;
   }
 
+<<<<<<< Updated upstream:BambulabLedController.ino
   Serial.println(F("===== JSON Data ====="));
   serializeJsonPretty(doc, Serial);
   Serial.println(F("======================"));
+=======
+  if (rawdata) {
+    Serial.println(F("===== JSON Data Receiving ====="));
+    serializeJsonPretty(doc, Serial);
+    Serial.println(F("======================"));
+  }
+>>>>>>> Stashed changes:BambulabLedController_NeoPixel.ino
 
   if (doc["print"].containsKey("stg_cur")){
     CurrentStage = doc["print"]["stg_cur"];
