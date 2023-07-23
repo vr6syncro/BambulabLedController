@@ -2,11 +2,19 @@
 
 <p align="left">
 Click for Youtube Video<br>
-	<a href="https://youtu.be/bh6ZwIvbDFg"><img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="350"></a>
+	<a href="https://youtu.be/bh6ZwIvbDFg"><img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="150"></a>
 </p>
 
+### Firmware changelog:
 
-## Setup - Flashing and Configure Controller
+v3 - added debug options, updated the code, removed some effects
+for more informations see: https://github.com/vr6syncro/BambulabLedController_Neopixel/releases/tag/testing_v3
+
+Also updated the Programmer Homepage to v3 (see below)
+
+
+
+# Setup - Flashing and Configure Controller
 
 For easy setup use my Flash Homepage: [https://vr6syncro.de/programmer/flash.html](https://vr6syncro.de/programmer/flash.html)
 There are compiled Version for installation.
