@@ -47,6 +47,22 @@ char* generateRandomString(int length) {
   return randomString;
 }
 
+/*
+void handleTouchInput() {
+  static unsigned long lastTouchTime = 0;
+  unsigned long currentMillis = millis();
+
+  // Check if enough time has passed to avoid multiple inputs due to debouncing
+  if (currentMillis - lastTouchTime >= 500) {
+    if (digitalRead(touchPin1) == HIGH) {
+      // Touch sensor is triggered, toggle the chamber light
+      handleCommand("chamber_light=toggle");
+      lastTouchTime = currentMillis; // Update last touch time to avoid rapid toggling
+    }
+  }
+}
+*/
+
 void publishMessage(const String& topic, const String& message) {
   mqttClient.publish(topic.c_str(), message.c_str());
   Serial.print("Publishing to topic: ");
@@ -67,6 +83,33 @@ void handleCommand(const String& command) {
     message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"pause\",\"param\":\"\"}}";
   } else if (command == "print=resume") {
     message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"resume\",\"param\":\"\"}}";
+  } else if (command.startsWith("set_chamber_fan_speed=")) {
+    String fanSpeedStr = command.substring(21);
+    int fanSpeed = fanSpeedStr.toInt();
+
+    // Adjust fan speed value if needed (0 to 255)
+    if (fanSpeed < 0) fanSpeed = 0;
+    if (fanSpeed > 255) fanSpeed = 255;
+
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P3 S" + String(fanSpeed) + "\\n\"}}";
+  } else if (command.startsWith("set_part_cooling_fan_speed=")) {
+    String fanSpeedStr = command.substring(27);
+    int fanSpeed = fanSpeedStr.toInt();
+
+    // Adjust fan speed value if needed (0 to 255)
+    if (fanSpeed < 0) fanSpeed = 0;
+    if (fanSpeed > 255) fanSpeed = 255;
+
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P1 S" + String(fanSpeed) + "\\n\"}}";
+  } else if (command.startsWith("set_aux_fan_speed=")) {
+    String fanSpeedStr = command.substring(18);
+    int fanSpeed = fanSpeedStr.toInt();
+
+    // Adjust fan speed value if needed (0 to 255)
+    if (fanSpeed < 0) fanSpeed = 0;
+    if (fanSpeed > 255) fanSpeed = 255;
+
+    message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P2 S" + String(fanSpeed) + "\\n\"}}";
   } else if (command == "chamber_light=on") {
     message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
   } else if (command == "chamber_light=off") {
@@ -94,50 +137,104 @@ void handleSerialInput() {
     String input = Serial.readStringUntil('\n');
     input.trim();
 
-    // Check if the input matches the brightness command
-    if (input.startsWith("brightness=")) {
-      String brightnessStr = input.substring(11);
-      int brightness = brightnessStr.toInt();
+    // Check if the input is empty
+    if (input.isEmpty()) {
+      Serial.println(F("Empty command. Please enter a valid command."));
+      return;
+    }
 
-      // Adjust brightness value if needed
-      if (brightness < 0) brightness = 0;
-      if (brightness > 255) brightness = 255;
+    // Find the position of the separator character '=' or space
+    int separatorPos = input.indexOf('=');
+    if (separatorPos == -1) {
+      separatorPos = input.indexOf(' ');
+    }
+
+    // Check if the separator character was found
+    if (separatorPos == -1) {
+      Serial.println(F("Invalid command format."));
+      return;
+    }
+
+    // Extract the command and value parts
+    String command = input.substring(0, separatorPos);
+    String value = input.substring(separatorPos + 1);
+
+    // Trim leading and trailing spaces from the value
+    value.trim();
+
+    // Process the command
+    if (command == "brightness") {
+      int brightness = value.toInt();
+
+      // Validate brightness value
+      if (brightness < 0 || brightness > 255) {
+        Serial.println(F("Invalid brightness value. Please enter a number between 0 and 255."));
+        return;
+      }
 
       strip.setBrightness(brightness);
       strip.show();
 
-      Serial.print("LED brightness set to ");
+      Serial.print(F("LED brightness set to "));
       Serial.println(brightness);
     }
-    else if (input.startsWith("currentstage=")) {
-      String stageStr = input.substring(13);
-      int stage = stageStr.toInt();
+    else if (command == "currentstage") {
+      int stage = value.toInt();
+
+      // Validate stage value
+      if (stage < 0) {
+        Serial.println(F("Invalid stage value. Please enter a non-negative number."));
+        return;
+      }
 
       CurrentStage = stage;
 
-      Serial.print("Current stage set to ");
+      Serial.print(F("Current stage set to "));
       Serial.println(CurrentStage);
-    } else if (input == "rawdata=true") {
+    } else if (command == "rawdata=true") {
       rawdata = true;
-      Serial.println("JSON data output is enabled.");
-    } else if (input == "rawdata=false") {
+      Serial.println(F("JSON data output is enabled."));
+    } else if (command == "rawdata=false") {
       rawdata = false;
-      Serial.println("JSON data output is disabled.");
-    } else if (input.startsWith("chamber_light=")) {
-      String stateStr = input.substring(14);
-      if (stateStr == "on") {
+      Serial.println(F("JSON data output is disabled."));
+    } else if (command == "chamber_light") {
+      if (value == "on") {
         publishMessage("device/" + String(PrinterID) + "/request", "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}");
-      } else if (stateStr == "off") {
+      } else if (value == "off") {
         publishMessage("device/" + String(PrinterID) + "/request", "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"off\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}");
+      } else {
+        Serial.println(F("Invalid chamber_light command. Please use 'chamber_light=on' or 'chamber_light=off'."));
       }
-    } else if (input == "print=stop" || input == "print=pause" || input == "print=resume" || input == "chamber_light=on" || input == "chamber_light=off") {
+    } else if (command == "print" || command == "chamber_light") {
       // Handle the commands for print and chamber_light
       handleCommand(input);
+    }
+else if (command == "set_chamber_fan_speed" || command == "set_part_cooling_fan_speed" || command == "set_aux_fan_speed") {
+  int fanSpeed = value.toInt();
+
+  // Validate fan speed value
+  if (fanSpeed < 0 || fanSpeed > 255) {
+    Serial.println(F("Invalid fan speed value. Please enter a number between 0 and 255."));
+    return;
+  }
+
+  String fanIndex;
+  if (command == "set_part_cooling_fan_speed") {
+    fanIndex = "1";
+  } else if (command == "set_aux_fan_speed") {
+    fanIndex = "2";
+  } else { // set_chamber_fan_speed
+    fanIndex = "3";
+  }
+
+  String message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P" + fanIndex + " S" + String(fanSpeed) + "\\n\"}}";
+  publishMessage("device/" + String(PrinterID) + "/request", message);
     } else {
       Serial.println(F("Invalid command."));
     }
   }
 }
+
 
 
 void replaceSubstring(char* string, const char* substring, const char* newSubstring) {
@@ -150,7 +247,7 @@ void replaceSubstring(char* string, const char* substring, const char* newSubstr
 }
 
 /*
-void handleSetTemperature() {
+  void handleSetTemperature() {
   if (!server.hasArg("api_key")) {
     return server.send(400, "text/plain", "Missing API key parameter.");
   };
@@ -178,7 +275,7 @@ void handleSetTemperature() {
     mqttClient.publish(mqttTopic, message.c_str());
   }
   return server.send(200, "text/plain", "Ok");
-}
+  }
 */
 
 void handleSetupRoot() { //Function to handle the setuppage
@@ -366,6 +463,7 @@ void setup() { // Setup function
 
   mqttClient.setServer(Printerip, 8883);
   mqttClient.setCallback(PrinterCallback);
+  pinMode(touchPin1, INPUT);
 }
 
 void loop() { //Loop function
@@ -406,4 +504,5 @@ void loop() { //Loop function
   //Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
   mqttClient.loop();
   handleSerialInput(); // debug
+  //handleTouchInput();
 }

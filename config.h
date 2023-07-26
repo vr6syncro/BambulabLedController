@@ -24,4 +24,7 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 //   NEO_RGBW    Pixels are wired for RGBW bitstream (NeoPixel RGBW products)
 // Functions
 
+// Touch Sensor 1
+const int touchPin1 = D3;
+
 #endif
