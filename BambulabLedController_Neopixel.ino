@@ -47,7 +47,7 @@ char* generateRandomString(int length) {
   return randomString;
 }
 
-/*
+
 void handleTouchInput() {
   static unsigned long lastTouchTime = 0;
   unsigned long currentMillis = millis();
@@ -56,12 +56,18 @@ void handleTouchInput() {
   if (currentMillis - lastTouchTime >= 500) {
     if (digitalRead(touchPin1) == HIGH) {
       // Touch sensor is triggered, toggle the chamber light
-      handleCommand("chamber_light=toggle");
+      if (ledstate) {
+        handleCommand("chamber_light=off");
+        Serial.println("Touch sensor is triggered, turning chamber light off");
+      } else {
+        handleCommand("chamber_light=on");
+        Serial.println("Touch sensor is triggered, turning chamber light on");
+      }
+
       lastTouchTime = currentMillis; // Update last touch time to avoid rapid toggling
     }
   }
 }
-*/
 
 void publishMessage(const String& topic, const String& message) {
   mqttClient.publish(topic.c_str(), message.c_str());
@@ -110,21 +116,29 @@ void handleCommand(const String& command) {
     if (fanSpeed > 255) fanSpeed = 255;
 
     message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P2 S" + String(fanSpeed) + "\\n\"}}";
-  } else if (command == "chamber_light=on") {
-    message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
-  } else if (command == "chamber_light=off") {
-    message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"off\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
+  } else if (command == "chamber_light=on" || command == "chamber_light=off") {
+    // Toggle the chamber light state (ON to OFF or OFF to ON)
+    ledstate = (command == "chamber_light=on");
+
+    // Construct the message based on the ledstate
+    if (ledstate) {
+      message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"on\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
+    } else {
+      message = "{\"system\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"ledctrl\",\"led_node\":\"chamber_light\",\"led_mode\":\"off\",\"led_on_time\":500,\"led_off_time\":500,\"loop_times\":1,\"interval_time\":1000}}";
+    }
+
+    // Publish the message
+    publishMessage("device/" + String(PrinterID) + "/request", message);
+
+    // Output to the serial monitor
+    Serial.print("Chamber light is ");
+    Serial.println(ledstate ? "ON" : "OFF");
   } else {
     // Invalid command
     Serial.println(F("Invalid command."));
     return;
   }
-
-  // Publish the message
-  publishMessage("device/" + String(PrinterID) + "/request", message);
 }
-
-
 
 /* Some Debugging Stuff
   change Neopixel Brightness with brightness=xxx (0 - 255)
@@ -209,26 +223,26 @@ void handleSerialInput() {
       // Handle the commands for print and chamber_light
       handleCommand(input);
     }
-else if (command == "set_chamber_fan_speed" || command == "set_part_cooling_fan_speed" || command == "set_aux_fan_speed") {
-  int fanSpeed = value.toInt();
+    else if (command == "set_chamber_fan_speed" || command == "set_part_cooling_fan_speed" || command == "set_aux_fan_speed") {
+      int fanSpeed = value.toInt();
 
-  // Validate fan speed value
-  if (fanSpeed < 0 || fanSpeed > 255) {
-    Serial.println(F("Invalid fan speed value. Please enter a number between 0 and 255."));
-    return;
-  }
+      // Validate fan speed value
+      if (fanSpeed < 0 || fanSpeed > 255) {
+        Serial.println(F("Invalid fan speed value. Please enter a number between 0 and 255."));
+        return;
+      }
 
-  String fanIndex;
-  if (command == "set_part_cooling_fan_speed") {
-    fanIndex = "1";
-  } else if (command == "set_aux_fan_speed") {
-    fanIndex = "2";
-  } else { // set_chamber_fan_speed
-    fanIndex = "3";
-  }
+      String fanIndex;
+      if (command == "set_part_cooling_fan_speed") {
+        fanIndex = "1";
+      } else if (command == "set_aux_fan_speed") {
+        fanIndex = "2";
+      } else { // set_chamber_fan_speed
+        fanIndex = "3";
+      }
 
-  String message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P" + fanIndex + " S" + String(fanSpeed) + "\\n\"}}";
-  publishMessage("device/" + String(PrinterID) + "/request", message);
+      String message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P" + fanIndex + " S" + String(fanSpeed) + "\\n\"}}";
+      publishMessage("device/" + String(PrinterID) + "/request", message);
     } else {
       Serial.println(F("Invalid command."));
     }
@@ -326,7 +340,7 @@ void savemqttdata() {
 }
 
 
-void PrinterCallback(char* topic, byte* payload, unsigned int length) { //Function to handle the MQTT Data from the mqtt broker
+void PrinterCallback(char* topic, byte * payload, unsigned int length) { //Function to handle the MQTT Data from the mqtt broker
   Serial.print(F("Message arrived in topic: "));
   Serial.println(topic);
   Serial.print(F("Message Length: "));
@@ -504,5 +518,5 @@ void loop() { //Loop function
   //Serial.printf("Free heap: %u\n", ESP.getFreeHeap());
   mqttClient.loop();
   handleSerialInput(); // debug
-  //handleTouchInput();
+  handleTouchInput();
 }

@@ -25,6 +25,6 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 // Functions
 
 // Touch Sensor 1
-const int touchPin1 = D3;
+const int touchPin1 = D1;
 
 #endif
