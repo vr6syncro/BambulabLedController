@@ -116,6 +116,16 @@ void handleCommand(const String& command) {
     if (fanSpeed > 255) fanSpeed = 255;
 
     message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"gcode_line\",\"param\":\"M106 P2 S" + String(fanSpeed) + "\\n\"}}";
+  } else if (command == "print_speed=1" || command == "print_speed=2" || command == "print_speed=3" || command == "print_speed=4") {
+    int speedLevel = command.substring(12).toInt();
+    // Handle the print_speed command
+    if (speedLevel >= 1 && speedLevel <= 4) {
+      message = "{\"print\":{\"sequence_id\":\"" + String(sequenceId) + "\",\"command\":\"print_speed\",\"param\":\"" + String(speedLevel) + "\"}}";
+      Serial.print("Printer speed set to level ");
+      Serial.println(speedLevel);
+    } else {
+      Serial.println(F("Invalid print speed level. Please enter a number between 1 and 4."));
+    }
   } else if (command == "chamber_light=on" || command == "chamber_light=off") {
     // Toggle the chamber light state (ON to OFF or OFF to ON)
     ledstate = (command == "chamber_light=on");
@@ -219,6 +229,10 @@ void handleSerialInput() {
       } else {
         Serial.println(F("Invalid chamber_light command. Please use 'chamber_light=on' or 'chamber_light=off'."));
       }
+    } else if (command == "print_speed") {
+      int speedLevel = value.toInt();
+      // Call the handleCommand function here with the "print_speed" command
+      handleCommand("print_speed=" + String(speedLevel));
     } else if (command == "print" || command == "chamber_light") {
       // Handle the commands for print and chamber_light
       handleCommand(input);
@@ -259,38 +273,6 @@ void replaceSubstring(char* string, const char* substring, const char* newSubstr
     memcpy(substringStart, newSubstring, strlen(newSubstring));
   }
 }
-
-/*
-  void handleSetTemperature() {
-  if (!server.hasArg("api_key")) {
-    return server.send(400, "text/plain", "Missing API key parameter.");
-  };
-  char shortened_key[7];
-  strncpy(shortened_key, EspPassword, 7);
-  shortened_key[7] = '\0';
-  char received_api_key[8];
-
-  server.arg("api_key").toCharArray(received_api_key, 8);
-  if (!strcmp(received_api_key, shortened_key) == 0) {
-    return server.send(401, "text/plain", "Unauthorized access.");
-  }
-  char mqttTopic[50];
-  strcpy(mqttTopic, "device/");
-  strcat(mqttTopic, PrinterID);
-  strcat(mqttTopic, "/request");
-  if (server.hasArg("bedtemp")) {
-    float bedtemp = server.arg("bedtemp").toFloat();
-    String message = "{\"print\":{\"sequence_id\":\"2026\",\"command\":\"gcode_line\",\"param\":\"M140 S" + String(bedtemp) + "\\n\"}}";
-    mqttClient.publish(mqttTopic, message.c_str());
-  }
-  if (server.hasArg("nozzletemp")) {
-    float bedtemp = server.arg("nozzletemp").toFloat();
-    String message = "{\"print\":{\"sequence_id\":\"2026\",\"command\":\"gcode_line\",\"param\":\"M104 S" + String(bedtemp) + "\\n\"}}";
-    mqttClient.publish(mqttTopic, message.c_str());
-  }
-  return server.send(200, "text/plain", "Ok");
-  }
-*/
 
 void handleSetupRoot() { //Function to handle the setuppage
   if (!server.authenticate("BLLC", EspPassword)) {
@@ -497,7 +479,6 @@ void loop() { //Loop function
 
       if (mqttClient.connect(DeviceName, "bblp", Printercode)) {
         Serial.println(F("Connected to MQTT"));
-        Led_off();
         char mqttTopic[50];
         strcpy(mqttTopic, "device/");
         strcat(mqttTopic, PrinterID);
