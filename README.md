@@ -1,5 +1,7 @@
 ## Wemos D1 Bambulab Neopixel Controller
 
+# We are switching to ESP32 with this project see more details at the new Repository: https://github.com/vr6syncro/Bambulab_Esp32_LEDController
+
 Important information: Please only use with one connected AMS, otherwise there will be problems with the large MQTT packages.
 
 <p align="left">
