@@ -1,6 +1,12 @@
-## Wemos D1 Bambulab Neopixel Controller
+# !!! [Please use the new version as it no longer works and has been replaced by an improved version!](https://github.com/vr6syncro/Bambulab_Esp32_LEDController) !!!
 
-# We are switching to ESP32 with this project see more details at the new Repository: https://github.com/vr6syncro/Bambulab_Esp32_LEDController
+
+
+
+
+#### Wemos D1 Bambulab Neopixel Controller
+
+##### We are switching to ESP32 with this project see more details at the new Repository: https://github.com/vr6syncro/Bambulab_Esp32_LEDController
 
 Important information: Please only use with one connected AMS, otherwise there will be problems with the large MQTT packages.
 
@@ -9,7 +15,7 @@ Click for Youtube Video<br>
 	<a href="https://youtu.be/bh6ZwIvbDFg"><img src="https://github.com/vr6syncro/BambulabLedController-Neopixel/blob/main/Projekt%20Files/Media/Pictures/Desktop%20Stand/20230608_003318.jpg?raw=true" width="150"></a>
 </p>
 
-### Firmware changelog:
+###### Firmware changelog:
 
 v3 - added debug options, updated the code, removed some effects
 for more informations see: https://github.com/vr6syncro/BambulabLedController_Neopixel/releases/tag/testing_v3
@@ -18,7 +24,7 @@ Also updated the Programmer Homepage to v3 (see below)
 
 
 
-# Setup - Flashing and Configure Controller
+###### Setup - Flashing and Configure Controller
 
 For easy setup use my Flash Homepage: [https://vr6syncro.de/programmer/flash.html](https://vr6syncro.de/programmer/flash.html)
 There are compiled Version for installation.
@@ -48,7 +54,7 @@ turn up.
 
 Now the controller is set up.
 
-## Wiring
+##### Wiring
 
 Up to 6 Led is supported with internal USB Power on the Wemos D1 mini if u are not modify the brightness in the firmware otherwise there ther might be some issues.
 
@@ -60,11 +66,11 @@ There is maybe also a arrow on the led. This must face away from the wemos side.
 
 If you use a Led Strip thats it otherwise you continue soldering from the dout side of the led to the next led din side.
 
-## Configuration
+##### Configuration
 
 You can find out how the compiled images were configured in the release notes.
 
-#####  If you want to configure it yourself you can find some information here:
+#######  If you want to configure it yourself you can find some information here:
 Wich effect is played on wich action is stored in handle.h
 The effects are stored in effects.h, i would advise against changing anything there.
 
@@ -79,7 +85,7 @@ There are a few things that must be solved to get it stable but is is already wo
 
 
 
-### License
+#### License
 
 The BL Led Controller is released under Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0) license. See the [LICENSE](https://github.com/DutchDevelop/BambulabLedController/blob/main/LICENSE) file for more details.
 
